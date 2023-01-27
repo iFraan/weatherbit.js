@@ -19,6 +19,11 @@ const parseCity = (city) => {
     return data;
 }
 
+/**
+ * Parse the raw data into a legible one
+ * @param {Axios.Response.data} response 
+ * @returns {CurrentWeather} Current Weather object
+ */
 const parseCurrent = (response) => {
     /* 
     Docs: https://www.weatherbit.io/api/weather-current
@@ -71,7 +76,8 @@ const parseCurrent = (response) => {
     return data;
 }
 
-
+/* speed its in meters per second */
+const _formatWindDisplay = (speed, display) => (`${Math.round(speed * 3.6)} km/h ${display}`);
 
 module.exports = {
     parseCity,
