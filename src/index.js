@@ -20,22 +20,33 @@ class API {
     }
 
     /**
+     * fetch a city and add it to the cache
+     * @param {String}
+     * @returns {CurrentWeather}
+     */
+    async #fetchCity(city) {
+        if (!city) throw new Error('Please provide a city to search for')
+        try {
+            const res = await axios.get(endpoints.current.replace('{TOKEN}', this.api_key).replace('{LANG}', this.lang).replace('{QUERY}', city), { timeout: this.timeout })
+                .catch(e => { throw new Error(e.message) });
+            this.cache[`${res.data.city_name}-${res.data.country_code}`] = {
+                data: res.data,
+                timestamp: Date.now()
+            }
+        } catch (err) {
+            throw new Error(err.message)
+        }
+    }
+
+    /**
      * Search a city or place and returns a result
      * @param {String} city Place to search
      * @returns Current Weather response
      */
     async search(city) {
         if (!city) throw new Error('Please provide a city to search for')
-        try {
-            const res = await axios.get(endpoints.current.replace('{TOKEN}', this.api_key).replace('{LANG}', this.lang).replace('{QUERY}', city), { timeout: this.timeout });
-            this.cache[`${res.city_name}-${res.country_code}`]
-            W.city = W._raw?.weatherdata?.weather?.[0] || W._raw?.weatherdata?.weather;
-        } catch (err) {
-            if (err.message.includes('code 500')) throw new Error('Server Internal Error')
-            throw new Error(err.message)
-        }
-        if (!W.city) throw new Error(W._raw)
-        return W;
+        /* validates cache and if it doesnt exists does the request */
+        return;
     }
     /**
      * Current
