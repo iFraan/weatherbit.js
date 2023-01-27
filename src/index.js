@@ -19,6 +19,7 @@ class API {
         this.timeout = options.timeout || 10_000; // 10 seconds
         this.cacheTime = options.cache_time || 45 * 60_000; // 45 min
         this.cache = {};
+        this.lv2_cache = {};
     }
 
     /**
@@ -51,13 +52,14 @@ class API {
      */
     async search(_city) {
         if (!_city) throw new Error('Please provide a city to search for')
-        const city = parseCity(_city);
+        const city = this.lv2_cache[_city] ? this.lv2_cache[_city] : parseCity(_city);
         /* validates cache and if it doesnt exists does the request */
         let cacheKey = `${city.name}-${city.country}`
         if (!this.cache[cacheKey] || ((Date.now() - this.cache[cacheKey].timestamp) > this.cacheTime)) {
             cacheKey = await this.#fetchCity(_city);
+            this.lv2_cache[_city] = cacheKey;
         }
-        return { ...this.cache[cacheKey], cacheKey };
+        return { ...this.cache[cacheKey] };
     }
 
 }
