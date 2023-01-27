@@ -1,10 +1,11 @@
 const axios = require('axios');
+const { parseCity, parseCurrent } = require('./utils/parse');
+const { LANG, UNITS } = require('./utils/constants');
 
 const baseUrl = 'https://api.weatherbit.io/v2.0';
 
 const endpoints = {
     current: `${baseUrl}/current?key={TOKEN}&lang={LANG}&city={QUERY}`,
-    forecast: `${baseUrl}/forecast?key={TOKEN}&lang={LANG}&city={QUERY}`,
 }
 
 class API {
@@ -14,9 +15,34 @@ class API {
         this.api_key = api_key;
         this.lang = options.lang || 'en';
         this.units = options.units || 'M';
+        this.debug = !!options.debug || false;
         this.timeout = options.timeout || 10_000; // 10 seconds
+        this.cacheTime = options.cache_time || 45 * 60_000; // 45 min
         this.cache = {};
-        this._raw = {};
+        this.lv2_cache = {};
+    }
+
+    /**
+     * fetch a city and add it to the cache
+     * @param {String}
+     * @returns {CurrentWeather}
+     */
+    async #fetchCity(city) {
+        if (this.debug) console.log(`Fetching data for ${city}`)
+        if (!city) throw new Error('Please provide a city to search for')
+        try {
+            const res = await axios.get(endpoints.current.replace('{TOKEN}', this.api_key).replace('{LANG}', this.lang).replace('{QUERY}', city), { timeout: this.timeout })
+                .catch(e => { throw new Error(e.message) });
+            const cacheKey = `${res.data.data[0].city_name}-${res.data.data[0].country_code}`;
+            this.cache[cacheKey] = {
+                data: parseCurrent(res.data?.data?.[0]),
+                timestamp: Date.now()
+            }
+
+            return cacheKey;
+        } catch (err) {
+            throw new Error(err.message)
+        }
     }
 
     /**
@@ -24,65 +50,23 @@ class API {
      * @param {String} city Place to search
      * @returns Current Weather response
      */
-    async search(city) {
-        if (!city) throw new Error('Please provide a city to search for')
-        try {
-            const res = await axios.get(endpoints.current.replace('{TOKEN}', this.api_key).replace('{LANG}', this.lang).replace('{QUERY}', city), { timeout: this.timeout });
-            this.cache[`${res.city_name}-${res.country_code}`]
-            W.city = W._raw?.weatherdata?.weather?.[0] || W._raw?.weatherdata?.weather;
-        } catch (err) {
-            if (err.message.includes('code 500')) throw new Error('Server Internal Error')
-            throw new Error(err.message)
+    async search(_city) {
+        if (!_city) throw new Error('Please provide a city to search for')
+        const city = this.lv2_cache[_city] ? this.lv2_cache[_city] : parseCity(_city);
+        /* validates cache and if it doesnt exists does the request */
+        let cacheKey = `${city.name}-${city.country}`
+        if (!this.cache[cacheKey] || ((Date.now() - this.cache[cacheKey].timestamp) > this.cacheTime)) {
+            cacheKey = await this.#fetchCity(_city);
+            this.lv2_cache[_city] = cacheKey;
         }
-        if (!W.city) throw new Error(W._raw)
-        return W;
-    }
-    /**
-     * Current
-     * @returns current weather with observation time
-     */
-    current() {
-        return this.city.current;
+        return { ...this.cache[cacheKey] };
     }
 
-    /**
-     * Forecast
-     * @returns next days weather forecast
-     */
-    forecast() {
-        return this.city.forecast;
-    }
-    /**
-     * Info
-     * @returns next days weather forecast
-     */
-    info() {
-        const C = this.city;
-        const INFO = {
-            location_code: C.weatherlocationcode,
-            location_name: C.weatherlocationname,
-            degree: C.degreetype,
-            provider: {
-                name: C.provider,
-                url: C.attribution
-            },
-            coords: {
-                latitude: C.lat,
-                longitude: C.long,
-            },
-            timezone: C.timezone
-        };
-
-        return INFO;
-    }
-
-    /**
-     * Raw
-     */
-    get raw() { return this._raw; }
 }
 
 
 module.exports = {
-    API
+    API,
+    UNITS,
+    LANG,
 }
