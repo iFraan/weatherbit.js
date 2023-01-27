@@ -4,10 +4,12 @@ const api = new API(TOKEN);
 
 const m = async () => {
     try {
-        const city = await api.search('Broklyn, NY', { degree: 'F', lang: 'es-ES' })
-        console.log('Info: ', city.info())
-        console.log('Current: ', city.current())
-        console.log('Forecast: ', city.forecast())
+        /* fetches data */
+        await api.search('New York')
+            .then(console.log);
+        /* uses cached data if used in the last 45 min */
+        await api.search('New York')
+            .then(console.log);;
     } catch (err) {
         console.log(err)
     }
