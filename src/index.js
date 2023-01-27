@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { parseCity, parseCurrent } = require('./utils/parse');
+const { LANG, UNITS } = require('./utils/constants');
 
 const baseUrl = 'https://api.weatherbit.io/v2.0';
 
@@ -14,7 +15,7 @@ class API {
         this.api_key = api_key;
         this.lang = options.lang || 'en';
         this.units = options.units || 'M';
-        this.debug = !!options.debug;
+        this.debug = !!options.debug || false;
         this.timeout = options.timeout || 10_000; // 10 seconds
         this.cacheTime = options.cache_time || 45 * 60_000; // 45 min
         this.cache = {};
@@ -63,5 +64,7 @@ class API {
 
 
 module.exports = {
-    API
+    API,
+    UNITS,
+    LANG,
 }
