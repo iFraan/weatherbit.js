@@ -1,0 +1,33 @@
+{
+  "name": "@ifraan_/weatherbit.js",
+  "version": "1.0.0",
+  "description": "Wrapper of WeatherBit API",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iFraan/weatherbit.js.git"
+  },
+  "keywords": [
+    "weather-api",
+    "weather",
+    "api",
+    "weatherbit",
+    "wrapper",
+    "weather.js",
+    "weather-js",
+    "weatherbit.js",
+    "clima"
+  ],
+  "author": "ifraan_",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/iFraan/weatherbit.js/issues"
+  },
+  "homepage": "https://github.com/iFraan/weatherbit.js#readme",
+  "dependencies": {
+    "axios": "^0.27.2"
+  }
+}
