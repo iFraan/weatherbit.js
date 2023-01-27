@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { parseCity, parseCurrent } = require('./utils/parse');
 
 const baseUrl = 'https://api.weatherbit.io/v2.0';
 
@@ -15,6 +16,7 @@ class API {
         this.lang = options.lang || 'en';
         this.units = options.units || 'M';
         this.timeout = options.timeout || 10_000; // 10 seconds
+        this.cacheTime = options.cache_time || 45 * 60_000; // 45 min
         this.cache = {};
         this._raw = {};
     }
@@ -29,10 +31,12 @@ class API {
         try {
             const res = await axios.get(endpoints.current.replace('{TOKEN}', this.api_key).replace('{LANG}', this.lang).replace('{QUERY}', city), { timeout: this.timeout })
                 .catch(e => { throw new Error(e.message) });
-            this.cache[`${res.data.city_name}-${res.data.country_code}`] = {
-                data: res.data,
+            const cacheKey = `${res.data.city_name}-${res.data.country_code}`
+            this.cache[cacheKey] = {
+                data: parseCurrent(res.data),
                 timestamp: Date.now()
             }
+            return cacheKey;
         } catch (err) {
             throw new Error(err.message)
         }
@@ -45,8 +49,15 @@ class API {
      */
     async search(city) {
         if (!city) throw new Error('Please provide a city to search for')
+        const city = parseCity(city);
         /* validates cache and if it doesnt exists does the request */
-        return;
+        let cacheKey = `${city.name}-${city.country}`
+        if (!this.cache[cacheKey]) {
+            if ((this.cache[cacheKey].timestamp - Date.now()) > this.cacheTime) {
+                cacheKey = await this.#fetchCity(city);
+            }
+        }
+        return { ...this.cache[cacheKey], cacheKey };
     }
     /**
      * Current
