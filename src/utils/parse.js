@@ -9,11 +9,11 @@ const parseCity = (city) => {
     data.name = arr[0];
     switch (arr.length) {
         case 2:
-            data.countryCode = arr[1];
+            data.country = arr[1].trim();
             break;
         case 3:
-            data.state = arr[1];
-            data.country = arr[2];
+            data.state = arr[1].trim();
+            data.country = arr[2].trim();
             break;
     }
     return data;
@@ -39,13 +39,13 @@ const parseCurrent = (response) => {
             longitude: response.lon,
         },
         wind: {
-            speed: response.win_spd,
+            speed: response.wind_spd,
             direction: {
                 degrees: response.wind_dir,
                 short: response.wind_cdir,
                 text: response.wind_cdir_full
             },
-            display: _formatWindDisplay(response.win_spd, response.wind_cdir_full)
+            display: _formatWindDisplay(response.wind_spd, response.wind_cdir_full)
         },
         weather: {
             /* icon, code, description */
