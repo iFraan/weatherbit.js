@@ -1,6 +1,6 @@
 {
   "name": "@ifraan_/weatherbit.js",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Wrapper of WeatherBit API",
   "main": "index.js",
   "scripts": {

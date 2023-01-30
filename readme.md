@@ -51,8 +51,7 @@ You can pass options to the search function to tweak the settings as you like
 You can also import types directly from the library and use it as options
 ```js
 const { API, UNITS, LANG } = require('@ifraan_/weatherbit.js');
-...
-await api.search('Los Angeles, US', {
+const api = new API('TOKEN', {
 	units: UNITS.Metric,
 	lang: LANG.English,
 })
